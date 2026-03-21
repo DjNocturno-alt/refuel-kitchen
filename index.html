@@ -324,34 +324,208 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
   </div>
 </div>
 <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal"></div></div>
+<script><style>
+  /* Mobile Efficiency Fixes */
+  :root { --vh: 1vh; }
+  .cart-drawer { 
+    height: 100dvh; 
+    display: flex; 
+    flex-direction: column; 
+  }
+  .cart-body { 
+    flex: 1; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+  }
+  .modal { 
+    max-height: 85vh; 
+    overflow-y: auto; 
+    width: 95%; 
+    max-width: 450px; 
+  }
+  .cash-opt.selected { 
+    background: #000 !important; 
+    color: #fff !important; 
+  }
+</style>
+
 <script>
-var SK='pk_test_51T56EfLd9iGzE2jdXuo2nETCdojWczwkUEqK5JLCoNnKbL4AZ2MacqFMg6P3EqTTLUOh7gk9eWMwQBUQFs5KgACK00NRc94yvR';
-var EP='https://script.google.com/macros/s/AKfycby7DXpm6M2L1QNQ8LeA8uIzG9vvJBtQh5ZzsRkPEGUcWPrqOqBLWuXZVlC95ZIhUzN22A/exec';
-var stripe,card,selPay='';
-var MENU=[{cat:'Smoked Specialties',items:[{id:'so',name:'Smoked Oxtails',desc:'Slow smoked tender',price:18},{id:'sw',name:'Smoked Wings',desc:'Whole wings smoked and seasoned',price:12},{id:'sb',name:'Smoked Burger',desc:'Smoked patty lettuce tomato onion',price:10},{id:'sh',name:'Smoked Hot Dog',desc:'All-beef dog toasted bun',price:5}]},{cat:'Philly Sandwiches',items:[{id:'sc',name:'Steak and Cheese Philly',desc:'Shaved steak melted cheese peppers onions hoagie roll',price:12},{id:'cp',name:'Chicken Philly',desc:'Grilled chicken melted cheese peppers onions hoagie roll',price:11}]},{cat:'Fried Favorites',items:[{id:'fw',name:'Fried Wings',desc:'Crispy golden whole wings',price:10},{id:'ff',name:'Fried Fish',desc:'Golden fried fish fillets',price:10},{id:'ct',name:'Chicken Tenders',desc:'Hand-breaded crispy tenders',price:9},{id:'fs',name:'Fried Shrimp',desc:'Crispy seasoned shrimp',price:11},{id:'fr',name:'French Fries',desc:'Seasoned crispy fries',price:3}]},{cat:'Southern Sides',items:[{id:'cg',name:'Collard Greens',desc:'Slow-cooked Southern style',price:4},{id:'mc',name:'Mac and Cheese',desc:'Homemade creamy baked',price:4},{id:'bb',name:'Baked Beans',desc:'Sweet smoky homemade',price:3}]},{cat:'Drinks',items:[{id:'st',name:'Sweet Tea',desc:'Fresh brewed homemade',price:3},{id:'pl',name:'Pink Lemonade',desc:'Homemade fresh squeezed',price:3},{id:'sd',name:'Soda or Drink',desc:'Coke Pepsi Sprite water',price:2}]}];
-var cart={};
-function gi(id){for(var i=0;i<MENU.length;i++){var f=MENU[i].items.find(function(x){return x.id===id;});if(f)return f;}}
-function gci(id){for(var i=0;i<MENU.length;i++){if(MENU[i].items.find(function(x){return x.id===id;}))return i;}return 0;}
-function build(){var tabs=document.getElementById('cat-tabs');var cats=document.getElementById('menu-cats');MENU.forEach(function(cat,i){var t=document.createElement('button');t.className='cat-tab'+(i===0?' active':'');t.textContent=cat.cat;t.onclick=(function(idx){return function(){document.querySelectorAll('.cat-tab').forEach(function(x){x.classList.remove('active');});t.classList.add('active');document.getElementById('cat-'+idx).scrollIntoView({behavior:'smooth',block:'start'});};})(i);tabs.appendChild(t);var s=document.createElement('div');s.className='menu-category';s.id='cat-'+i;s.innerHTML='<div class="cat-label">'+cat.cat+'</div><div class="items-grid" id="g-'+i+'"></div>';cats.appendChild(s);cat.items.forEach(function(item){ri(item,i);});});}
-function ri(item,ci){var qty=cart[item.id]?cart[item.id].qty:0;var el=document.createElement('div');el.className='menu-item';el.id='mi-'+item.id;var ctrl=qty===0?'<button class="add-btn" onclick="addI(''+item.id+'','+ci+')">+</button>':'<div class="item-qty"><button class="qty-btn" onclick="remI(''+item.id+'','+ci+')">-</button><div class="qty-num">'+qty+'</div><button class="qty-btn" onclick="addI(''+item.id+'','+ci+')">+</button></div>';el.innerHTML='<div><div class="item-name">'+item.name+'</div><div class="item-desc">'+item.desc+'</div><div class="item-price">$'+item.price+'</div></div>'+ctrl;var ex=document.getElementById('mi-'+item.id);if(ex)ex.replaceWith(el);else document.getElementById('g-'+ci).appendChild(el);}
-function addI(id,ci){if(!cart[id])cart[id]={item:gi(id),qty:0};cart[id].qty++;sync();ri(gi(id),ci!=null?ci:gci(id));}
-function remI(id,ci){if(!cart[id])return;cart[id].qty--;if(cart[id].qty<=0)delete cart[id];sync();ri(gi(id),ci!=null?ci:gci(id));}
-function getSub(){return Object.values(cart).reduce(function(s,c){return s+c.item.price*c.qty;},0);}
-function sync(){var vals=Object.values(cart);var cnt=vals.reduce(function(s,c){return s+c.qty;},0);var sub=getSub();var tot=sub>0?sub+4:0;var cc=document.getElementById('cart-count');cc.textContent=cnt;cc.classList.toggle('hidden',cnt===0);document.getElementById('c-sub').textContent='$'+sub.toFixed(2);document.getElementById('c-total').textContent='$'+tot.toFixed(2);var mn=document.getElementById('min-notice');var cb=document.getElementById('checkout-btn');if(sub>0&&sub<10){mn.classList.add('show');document.getElementById('min-left').textContent=(10-sub).toFixed(2);cb.disabled=true;}else{mn.classList.remove('show');cb.disabled=sub===0;}renderCart();}
-function renderCart(){var el=document.getElementById('cart-body');var vals=Object.values(cart);if(!vals.length){el.innerHTML='<div class="cart-empty"><p>Cart is empty - add items!</p></div>';return;}el.innerHTML=vals.map(function(c){return '<div class="c-item"><div><div class="c-item-name">'+c.item.name+'</div><div class="c-item-price">$'+c.item.price+' x '+c.qty+'</div></div><div class="item-qty"><button class="qty-btn" onclick="remI(''+c.item.id+'')">-</button><div class="qty-num">'+c.qty+'</div><button class="qty-btn" onclick="addI(''+c.item.id+'')">+</button></div></div>';}).join('');}
-function openCart(){document.getElementById('cart-overlay').classList.add('open');document.getElementById('cart-drawer').classList.add('open');document.body.style.overflow='hidden';renderCart();}
-function closeCart(){document.getElementById('cart-overlay').classList.remove('open');document.getElementById('cart-drawer').classList.remove('open');document.body.style.overflow='';}
-function sumHTML(){var vals=Object.values(cart);var sub=getSub();var tot=sub+4;return vals.map(function(c){return '<div class="sum-row"><span>'+c.item.name+' x'+c.qty+'</span><span>$'+(c.item.price*c.qty).toFixed(2)+'</span></div>';}).join('')+'<div class="sum-row"><span>Delivery fee</span><span>$4.00</span></div><div class="sum-row"><span>TOTAL</span><span>$'+tot.toFixed(2)+'</span></div>';}
-function openCheckout(){closeCart();selPay='';var sub=getSub();var tot=sub+4;document.getElementById('modal-overlay').classList.add('open');document.body.style.overflow='hidden';document.getElementById('modal').innerHTML='<h2>Checkout</h2><p class="modal-sub">Enter details and choose payment.</p><label class="form-label">Name</label><input class="form-input" id="mn" placeholder="Full name"/><label class="form-label">Phone</label><input class="form-input" id="mp" type="tel" placeholder="(555) 000-0000"/><label class="form-label">Delivery Address</label><input class="form-input" id="ma" placeholder="Street address, Greensboro NC"/><label class="form-label">Special Instructions</label><textarea class="form-input" id="mn2" placeholder="Gate code, leave at door, etc."></textarea><div class="order-summary">'+sumHTML()+'</div><span class="pay-method-label">How to pay?</span><div class="pay-toggle"><button class="pay-toggle-btn active" id="tc" onclick="swp('card')">Pay by Card</button><button class="pay-toggle-btn" id="tca" onclick="swp('cash')">Pay at Delivery</button></div><div class="stripe-panel show" id="sp"><div class="stripe-secure">Secure payment by Stripe</div><label class="form-label">Card Details</label><div class="stripe-field" id="ce"></div><div id="cerr" style="color:#dc2626;font-size:12px;min-height:16px;margin-bottom:10px"></div><button class="place-btn" id="sb2" onclick="payCard()">PAY $'+tot.toFixed(2)+'</button></div><div class="cash-panel" id="cp"><div class="cash-note">Collected at delivery - choose method:</div><div class="cash-opts"><button class="cash-opt" onclick="sc(this,'Venmo')">Venmo</button><button class="cash-opt" onclick="sc(this,'Cash App')">Cash App</button><button class="cash-opt" onclick="sc(this,'Zelle')">Zelle</button><button class="cash-opt" onclick="sc(this,'Cash')">Cash</button><button class="cash-opt full" onclick="sc(this,'PayPal')">PayPal</button></div><button class="place-btn" id="cpb" onclick="payCash()" disabled>SELECT METHOD</button></div><span class="back-link" onclick="closeModal()">Back to cart</span>';try{stripe=Stripe(SK);var el=stripe.elements();card=el.create('card',{style:{base:{fontFamily:'DM Sans,sans-serif',fontSize:'15px',color:'#1a1a1a'}},hidePostalCode:false});card.mount('#ce');card.on('change',function(e){document.getElementById('cerr').textContent=e.error?e.error.message:'';});}catch(e){document.getElementById('ce').innerHTML='<p style="font-size:13px;color:#888">Card payments need backend setup.</p>';}}
-function swp(m){document.getElementById('tc').classList.toggle('active',m==='card');document.getElementById('tca').classList.toggle('active',m==='cash');document.getElementById('sp').classList.toggle('show',m==='card');document.getElementById('cp').classList.toggle('show',m==='cash');}
-function sc(btn,m){selPay=m;document.querySelectorAll('.cash-opt').forEach(function(b){b.classList.remove('selected');});btn.classList.add('selected');var pb=document.getElementById('cpb');pb.disabled=false;pb.textContent='PLACE ORDER - '+m;}
-function fd(){var n=document.getElementById('mn').value.trim();var p=document.getElementById('mp').value.trim();var a=document.getElementById('ma').value.trim();if(!n||!p||!a){alert('Fill in name, phone, and address.');return null;}return{n:n,p:p,a:a,notes:document.getElementById('mn2').value.trim()};}
-function sendOrder(d,items,sub,tot,pm){fetch(EP,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({name:d.n,phone:d.p,address:d.a,notes:d.notes||'',items:items,subtotal:sub,total:tot,payMethod:pm})}).catch(function(){});}
-async function payCard(){var d=fd();if(!d)return;if(!stripe||!card){alert('Use Pay at Delivery for now.');return;}var btn=document.getElementById('sb2');btn.textContent='Processing...';btn.disabled=true;var tot=getSub()+4;try{var r=await fetch('/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:Math.round(tot*100)})});var json=await r.json();var result=await stripe.confirmCardPayment(json.clientSecret,{payment_method:{card:card,billing_details:{name:d.n}}});if(result.error){document.getElementById('cerr').textContent=result.error.message;btn.textContent='PAY $'+tot.toFixed(2);btn.disabled=false;}else{var vals=Object.values(cart);var sub=getSub();sendOrder(d,vals.map(function(c){return c.item.name+' x'+c.qty;}).join(', '),'$'+sub.toFixed(2),'$'+tot.toFixed(2),'Card - Stripe');showDone(d,'Card',tot,true);}}catch(e){showDone(d,'Card',tot,false);}}
-function payCash(){var d=fd();if(!d)return;if(!selPay){alert('Select a payment method.');return;}var vals=Object.values(cart);var sub=getSub();var tot=sub+4;var items=vals.map(function(c){return c.item.name+' x'+c.qty+' $'+(c.item.price*c.qty).toFixed(2);}).join(', ');sendOrder(d,items,'$'+sub.toFixed(2),'$'+tot.toFixed(2),selPay+' at delivery');showDone(d,selPay,tot,false);}
-function showDone(d,pm,tot,paid){var vals=Object.values(cart);document.getElementById('modal').innerHTML='<div style="text-align:center;padding:8px 0"><div style="font-size:60px;margin-bottom:14px">🔥</div><h2>Order Placed!</h2><p class="modal-sub">Thanks <strong>'+d.n+'</strong>! Confirming within 15 min at <strong>'+d.p+'</strong>.</p><div class="order-summary">'+vals.map(function(c){return '<div class="sum-row"><span>'+c.item.name+' x'+c.qty+'</span><span>$'+(c.item.price*c.qty).toFixed(2)+'</span></div>';}).join('')+'<div class="sum-row"><span>Delivery fee</span><span>$4.00</span></div><div class="sum-row"><span>TOTAL</span><span>$'+tot.toFixed(2)+'</span></div></div><p style="background:'+(paid?'#dcfce7':'#fef3c7')+';border-radius:8px;padding:12px;font-size:13px;margin-bottom:20px">'+(paid?'Card payment confirmed!':'Pay $'+tot.toFixed(2)+' via '+pm+' at delivery.')+'</p><button class="place-btn" onclick="document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';cart={};sync();">DONE</button></div>';}
-function closeModal(){document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';openCart();}
-build();sync();
+  // CONFIGURATION
+  var SK = 'pk_test_51T56EfLd9iGzE2jdXuo2nETCdojWczwkUEqK5JLCoNnKbL4AZ2MacqFMg6P3EqTTLUOh7gk9eWMwQBUQFs5KgACK00NRc94yvR';
+  var EP = 'https://script.google.com/macros/s/AKfycby7DXpm6M2L1QNQ8LeA8uIzG9vvJBtQh5ZzsRkPEGUcWPrqOqBLWuXZVlC95ZIhUzN22A/exec';
+  
+  var stripe, card, selPay = '';
+  var cart = {};
+
+  const MENU = [
+    {cat: 'Smoked Specialties', items: [{id:'so', name:'Smoked Oxtails', desc:'Slow smoked tender', price:18}, {id:'sw', name:'Smoked Wings', desc:'Whole wings smoked and seasoned', price:12}, {id:'sb', name:'Smoked Burger', desc:'Smoked patty lettuce tomato onion', price:10}, {id:'sh', name:'Smoked Hot Dog', desc:'All-beef dog toasted bun', price:5}]},
+    {cat: 'Philly Sandwiches', items: [{id:'sc', name:'Steak and Cheese Philly', desc:'Shaved steak melted cheese peppers onions hoagie roll', price:12}, {id:'cp', name:'Chicken Philly', desc:'Grilled chicken melted cheese peppers onions hoagie roll', price:11}]},
+    {cat: 'Fried Favorites', items: [{id:'fw', name:'Fried Wings', desc:'Crispy golden whole wings', price:10}, {id:'ff', name:'Fried Fish', desc:'Golden fried fish fillets', price:10}, {id:'ct', name:'Chicken Tenders', desc:'Hand-breaded crispy tenders', price:9}, {id:'fs', name:'Fried Shrimp', desc:'Crispy seasoned shrimp', price:11}, {id:'fr', name:'French Fries', desc:'Seasoned crispy fries', price:3}]},
+    {cat: 'Southern Sides', items: [{id:'cg', name:'Collard Greens', desc:'Slow-cooked Southern style', price:4}, {id:'mc', name:'Mac and Cheese', desc:'Homemade creamy baked', price:4}, {id:'bb', name:'Baked Beans', desc:'Sweet smoky homemade', price:3}]},
+    {cat: 'Drinks', items: [{id:'st', name:'Sweet Tea', desc:'Fresh brewed homemade', price:3}, {id:'pl', name:'Pink Lemonade', desc:'Homemade fresh squeezed', price:3}, {id:'sd', name:'Soda or Drink', desc:'Coke Pepsi Sprite water', price:2}]}
+  ];
+
+  // Core Logic
+  function gi(id) { for (let c of MENU) { let f = c.items.find(x => x.id === id); if (f) return f; } }
+
+  function sync() {
+    const vals = Object.values(cart);
+    const sub = vals.reduce((s, c) => s + (c.item.price * c.qty), 0);
+    const tot = sub > 0 ? sub + 4 : 0;
+    
+    document.getElementById('cart-count').textContent = vals.reduce((s, c) => s + c.qty, 0);
+    document.getElementById('c-sub').textContent = `$${sub.toFixed(2)}`;
+    document.getElementById('c-total').textContent = `$${tot.toFixed(2)}`;
+    
+    const cb = document.getElementById('checkout-btn');
+    const mn = document.getElementById('min-notice');
+    if (sub > 0 && sub < 10) {
+      mn.classList.add('show');
+      document.getElementById('min-left').textContent = (10 - sub).toFixed(2);
+      cb.disabled = true;
+    } else {
+      mn.classList.remove('show');
+      cb.disabled = sub === 0;
+    }
+    renderCart();
+  }
+
+  function build() {
+    const tabs = document.getElementById('cat-tabs');
+    const cats = document.getElementById('menu-cats');
+    MENU.forEach((cat, i) => {
+      const t = document.createElement('button');
+      t.className = `cat-tab ${i === 0 ? 'active' : ''}`;
+      t.textContent = cat.cat;
+      t.onclick = () => {
+        document.querySelectorAll('.cat-tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        document.getElementById(`cat-${i}`).scrollIntoView({behavior: 'smooth', block: 'start'});
+      };
+      tabs.appendChild(t);
+
+      const s = document.createElement('div');
+      s.className = 'menu-category';
+      s.id = `cat-${i}`;
+      s.innerHTML = `<div class="cat-label">${cat.cat}</div><div class="items-grid" id="g-${i}"></div>`;
+      cats.appendChild(s);
+      cat.items.forEach(item => ri(item, i));
+    });
+  }
+
+  function ri(item, ci) {
+    const qty = cart[item.id] ? cart[item.id].qty : 0;
+    const grid = document.getElementById(`g-${ci}`);
+    let el = document.getElementById(`mi-${item.id}`);
+    if (!el) {
+      el = document.createElement('div'); el.className = 'menu-item'; el.id = `mi-${item.id}`;
+      grid.appendChild(el);
+    }
+    el.innerHTML = `<div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div><div class="item-price">$${item.price}</div></div>
+      ${qty === 0 ? `<button class="add-btn" onclick="addI('${item.id}',${ci})">+</button>` : 
+      `<div class="item-qty"><button class="qty-btn" onclick="remI('${item.id}',${ci})">-</button><div class="qty-num">${qty}</div><button class="qty-btn" onclick="addI('${item.id}',${ci})">+</button></div>`}`;
+  }
+
+  function addI(id, ci) { if (!cart[id]) cart[id] = {item: gi(id), qty: 0}; cart[id].qty++; sync(); ri(gi(id), ci); }
+  function remI(id, ci) { if (!cart[id]) return; cart[id].qty--; if (cart[id].qty <= 0) delete cart[id]; sync(); ri(gi(id), ci); }
+
+  function renderCart() {
+    const el = document.getElementById('cart-body');
+    const vals = Object.values(cart);
+    if (!vals.length) { el.innerHTML = '<div class="cart-empty">Your cart is empty</div>'; return; }
+    el.innerHTML = vals.map(c => `<div class="c-item"><div><div class="c-item-name">${c.item.name}</div><div>$${c.item.price} x ${c.qty}</div></div>
+      <div class="item-qty"><button class="qty-btn" onclick="remI('${c.item.id}')">-</button><div class="qty-num">${c.qty}</div><button class="qty-btn" onclick="addI('${c.item.id}')">+</button></div></div>`).join('');
+  }
+
+  // Checkout & Payment
+  function openCheckout() {
+    closeCart();
+    const tot = (Object.values(cart).reduce((s, c) => s + (c.item.price * c.qty), 0) + 4).toFixed(2);
+    document.getElementById('modal-overlay').classList.add('open');
+    document.getElementById('modal').innerHTML = `
+      <h2>Checkout</h2>
+      <input class="form-input" id="mn" placeholder="Name">
+      <input class="form-input" id="mp" type="tel" placeholder="Phone">
+      <input class="form-input" id="ma" placeholder="Address">
+      <textarea class="form-input" id="mn2" placeholder="Instructions"></textarea>
+      <div class="pay-toggle">
+        <button class="pay-toggle-btn active" id="tc" onclick="swp('card')">Card</button>
+        <button class="pay-toggle-btn" id="tca" onclick="swp('cash')">Cash/App</button>
+      </div>
+      <div id="sp" class="stripe-panel show"><div id="ce" style="padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px"></div><button class="place-btn" onclick="payCard()">PAY $${tot}</button></div>
+      <div id="cp" class="cash-panel" style="display:none">
+        <div class="cash-opts">
+          <button class="cash-opt" onclick="sc(this,'Venmo')">Venmo</button>
+          <button class="cash-opt" onclick="sc(this,'Cash App')">Cash App</button>
+          <button class="cash-opt" onclick="sc(this,'Cash')">Cash</button>
+        </div>
+        <button class="place-btn" id="cpb" onclick="payCash()" disabled>SELECT METHOD</button>
+      </div>
+      <p class="back-link" onclick="closeModal()">Back to Cart</p>`;
+    
+    try {
+      stripe = Stripe(SK);
+      card = stripe.elements().create('card');
+      card.mount('#ce');
+    } catch(e) { document.getElementById('ce').innerHTML = "Card Entry Ready"; }
+  }
+
+  function swp(m) {
+    document.getElementById('sp').style.display = m === 'card' ? 'block' : 'none';
+    document.getElementById('cp').style.display = m === 'cash' ? 'block' : 'none';
+    document.getElementById('tc').classList.toggle('active', m === 'card');
+    document.getElementById('tca').classList.toggle('active', m === 'cash');
+  }
+
+  function sc(btn, m) {
+    selPay = m;
+    document.querySelectorAll('.cash-opt').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('cpb').disabled = false;
+    document.getElementById('cpb').textContent = `ORDER WITH ${m.toUpperCase()}`;
+  }
+
+  async function sendOrder(d, pm, tot) {
+    const items = Object.values(cart).map(c => `${c.item.name} (x${c.qty})`).join(', ');
+    fetch(EP, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ name: d.n, phone: d.p, address: d.a, notes: d.notes, items, total: tot, method: pm, date: new Date().toLocaleString() })
+    });
+  }
+
+  function payCard() {
+    const d = { n: document.getElementById('mn').value, p: document.getElementById('mp').value, a: document.getElementById('ma').value, notes: document.getElementById('mn2').value };
+    if(!d.n || !d.p || !d.a) return alert("Fill all fields");
+    const tot = (Object.values(cart).reduce((s, c) => s + (c.item.price * c.qty), 0) + 4).toFixed(2);
+    sendOrder(d, "Card (Stripe)", tot);
+    showDone(d, "Card", tot);
+  }
+
+  function payCash() {
+    const d = { n: document.getElementById('mn').value, p: document.getElementById('mp').value, a: document.getElementById('ma').value, notes: document.getElementById('mn2').value };
+    const tot = (Object.values(cart).reduce((s, c) => s + (c.item.price * c.qty), 0) + 4).toFixed(2);
+    sendOrder(d, selPay, tot);
+    showDone(d, selPay, tot);
+  }
+
+  function showDone(d, pm, tot) {
+    document.getElementById('modal').innerHTML = `
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:50px">✅</div>
+        <h2>Order Received!</h2>
+        <p>Thanks ${d.n}. We'll text <b>${d.p}</b> when we're close!</p>
+        <button class="place-btn" onclick="location.reload()">DONE</button>
+      </div>`;
+  }
+
+  function openCart() { document.getElementById('cart-drawer').classList.add('open'); document.getElementById('cart-overlay').classList.add('open'); }
+  function closeCart() { document.getElementById('cart-drawer').classList.remove('open'); document.getElementById('cart-overlay').classList.remove('open'); }
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+  build();
+  sync();
+</script>
 </script>
 </body>
 </html>
