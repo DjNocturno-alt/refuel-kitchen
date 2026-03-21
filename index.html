@@ -461,6 +461,7 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
 </style>
 
 <script>
+  // CONFIGURATION
   var SK = 'pk_test_51T56EfLd9iGzE2jdXuo2nETCdojWczwkUEqK5JLCoNnKbL4AZ2MacqFMg6P3EqTTLUOh7gk9eWMwQBUQFs5KgACK00NRc94yvR';
   var EP = 'https://script.google.com/macros/s/AKfycby7DXpm6M2L1QNQ8LeA8uIzG9vvJBtQh5ZzsRkPEGUcWPrqOqBLWuXZVlC95ZIhUzN22A/exec';
   
@@ -481,9 +482,11 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
     const vals = Object.values(cart);
     const sub = vals.reduce((s, c) => s + (c.item.price * c.qty), 0);
     const tot = sub > 0 ? sub + 4 : 0;
+    
     document.getElementById('cart-count').textContent = vals.reduce((s, c) => s + c.qty, 0);
     document.getElementById('c-sub').textContent = `$${sub.toFixed(2)}`;
     document.getElementById('c-total').textContent = `$${tot.toFixed(2)}`;
+    
     const cb = document.getElementById('checkout-btn');
     const mn = document.getElementById('min-notice');
     if (sub > 0 && sub < 10) {
@@ -510,6 +513,7 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
         document.getElementById(`cat-${i}`).scrollIntoView({behavior: 'smooth', block: 'start'});
       };
       tabs.appendChild(t);
+
       const s = document.createElement('div');
       s.className = 'menu-category'; s.id = `cat-${i}`;
       s.innerHTML = `<div class="cat-label">${cat.cat}</div><div class="items-grid" id="g-${i}"></div>`;
@@ -522,7 +526,10 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
     const qty = cart[item.id] ? cart[item.id].qty : 0;
     const grid = document.getElementById(`g-${ci}`);
     let el = document.getElementById(`mi-${item.id}`);
-    if (!el) { el = document.createElement('div'); el.className = 'menu-item'; el.id = `mi-${item.id}`; grid.appendChild(el); }
+    if (!el) {
+      el = document.createElement('div'); el.className = 'menu-item'; el.id = `mi-${item.id}`;
+      grid.appendChild(el);
+    }
     el.innerHTML = `<div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div><div class="item-price">$${item.price}</div></div>
       ${qty === 0 ? `<button class="add-btn" onclick="addI('${item.id}',${ci})">+</button>` : 
       `<div class="item-qty"><button class="qty-btn" onclick="remI('${item.id}',${ci})">-</button><div class="qty-num">${qty}</div><button class="qty-btn" onclick="addI('${item.id}',${ci})">+</button></div>`}`;
@@ -548,7 +555,7 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
       <input class="form-input" id="mn" placeholder="Name">
       <input class="form-input" id="mp" type="tel" placeholder="Phone">
       <input class="form-input" id="ma" placeholder="Address">
-      <textarea class="form-input" id="mn2" placeholder="Instructions (Gate code, etc)"></textarea>
+      <textarea class="form-input" id="mn2" placeholder="Instructions (Gate code, house color, etc)"></textarea>
       <div class="pay-toggle">
         <button class="pay-toggle-btn active" id="tc" onclick="swp('card')">Card</button>
         <button class="pay-toggle-btn" id="tca" onclick="swp('cash')">Pay at Delivery</button>
@@ -563,6 +570,7 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
         <button class="place-btn" id="cpb" onclick="payCash()" disabled>SELECT METHOD</button>
       </div>
       <p class="back-link" onclick="closeModal()">Back to Cart</p>`;
+    
     try {
       stripe = Stripe(SK);
       card = stripe.elements().create('card', { style: { base: { fontSize: '16px' } } });
@@ -623,6 +631,7 @@ footer p{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:3px}
   function closeCart() { document.getElementById('cart-drawer').classList.remove('open'); document.getElementById('cart-overlay').classList.remove('open'); }
   function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
 
+  // START SITE
   build();
   sync();
 </script>
