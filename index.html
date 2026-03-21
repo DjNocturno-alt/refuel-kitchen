@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--orange:#e8431a;--dark:#1a1a1a;--bg:#f5f0e8;--border:#e8e0d0;--muted:#888;--green:#16a34a}
+        :root{--orange:#e8431a;--dark:#1a1a1a;--bg:#f5f0e8;--card:#fff;--border:#e8e0d0;--muted:#888;--green:#16a34a}
         html{scroll-behavior:smooth}
         body{background:var(--dark);font-family:'DM Sans',sans-serif;color:var(--dark);line-height:1.5}
         nav{background:var(--dark);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,0.08)}
@@ -72,7 +72,7 @@
         .form-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:4px;margin-top:10px}
         .form-input{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none}
         .form-input:focus{border-color:var(--orange)}
-        textarea.form-input{resize:none;height:64px}
+        textarea.form-input{resize:none;height:64px;margin-bottom:4px}
         .order-summary{background:var(--bg);border-radius:10px;padding:14px;margin:16px 0;font-size:13px}
         .sum-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
         .sum-row:last-child{border-bottom:none;font-weight:700;padding-top:8px}
@@ -121,15 +121,15 @@
             <div class="cart-row"><span>Subtotal</span><span id="c-sub">$0.00</span></div>
             <div class="cart-row"><span>Delivery fee</span><span>$4.00</span></div>
             <div class="cart-row total"><span>Total</span><span id="c-total">$0.00</span></div>
-            <div class="min-notice" id="min-notice">Minimum $10. Add $<span id="min-left">10</span> more.</div>
+            <div class="min-notice" id="min-notice">Minimum order is $10. Add $<span id="min-left">10</span> more.</div>
             <button class="checkout-btn" id="checkout-btn" onclick="openCheckout()" disabled>PLACE ORDER</button>
         </div>
     </div>
     <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal"></div></div>
     <script>
-        const EP='https://script.google.com/macros/s/AKfycby7DXpm6M2L1QNQ8LeA8uIzG9vvJBtQh5ZzsRkPEGUcWPrqOqBLWuXZVlC95ZIhUzN22A/exec';
-        let cart={};
-        const MENU=[
+        const EP = 'https://script.google.com/macros/s/AKfycby7DXpm6M2L1QNQ8LeA8uIzG9vvJBtQh5ZzsRkPEGUcWPrqOqBLWuXZVlC95ZIhUzN22A/exec';
+        let cart = {};
+        const MENU = [
             {cat:'Smoked Specialties',items:[{id:'so',name:'Smoked Oxtails',desc:'Slow smoked, fall-off-the-bone tender',price:18},{id:'sw',name:'Smoked Wings',desc:'Whole jumbo wings, smoked and seasoned',price:12},{id:'sb',name:'Smoked Burger',desc:'Smoked patty, lettuce, tomato, onion',price:10},{id:'sh',name:'Smoked Hot Dog',desc:'All-beef dog on a toasted bun',price:5}]},
             {cat:'Philly Sandwiches',items:[{id:'sc',name:'Steak and Cheese Philly',desc:'Shaved steak, peppers, onions on a hoagie',price:12},{id:'cp',name:'Chicken Philly',desc:'Grilled chicken, melted cheese, peppers',price:11}]},
             {cat:'Fried Favorites',items:[{id:'fw',name:'Fried Wings',desc:'Crispy golden whole wings',price:10},{id:'ff',name:'Fried Fish',desc:'Golden fried fish fillets',price:10},{id:'ct',name:'Chicken Tenders',desc:'Hand-breaded crispy tenders',price:9},{id:'fs',name:'Fried Shrimp',desc:'Crispy seasoned shrimp',price:11},{id:'fr',name:'French Fries',desc:'Seasoned crispy fries',price:3}]},
@@ -140,26 +140,28 @@
         function buildMenu(){
             const tabs=document.getElementById('cat-tabs');
             const cats=document.getElementById('menu-cats');
-            MENU.forEach((cat,i)=>{
+            MENU.forEach((category,i)=>{
                 const btn=document.createElement('button');
                 btn.className='cat-tab'+(i===0?' active':'');
-                btn.textContent=cat.cat;
+                btn.textContent=category.cat;
                 btn.onclick=()=>{document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.getElementById('cat-'+i).scrollIntoView({behavior:'smooth'});};
                 tabs.appendChild(btn);
-                const s=document.createElement('div');
-                s.className='menu-category';s.id='cat-'+i;
-                s.innerHTML='<div class="cat-label">'+cat.cat+'</div><div class="items-grid" id="grid-'+i+'"></div>';
-                cats.appendChild(s);
-                cat.items.forEach(item=>renderItem(item,i));
+                const section=document.createElement('div');
+                section.className='menu-category';
+                section.id='cat-'+i;
+                section.innerHTML='<div class="cat-label">'+category.cat+'</div><div class="items-grid" id="grid-'+i+'"></div>';
+                cats.appendChild(section);
+                category.items.forEach(item=>renderItem(item,i));
             });
         }
         function renderItem(item,ci){
             const qty=cart[item.id]?cart[item.id].qty:0;
+            const grid=document.getElementById('grid-'+ci);
             let el=document.getElementById('mi-'+item.id);
-            if(!el){el=document.createElement('div');el.className='menu-item';el.id='mi-'+item.id;document.getElementById('grid-'+ci).appendChild(el);}
+            if(!el){el=document.createElement('div');el.className='menu-item';el.id='mi-'+item.id;grid.appendChild(el);}
             const ctrl=qty===0
-                ?'<button class="add-btn" onclick="addI(''+item.id+'','+ci+')">+</button>'
-                :'<div class="item-qty"><button class="qty-btn" onclick="remI(''+item.id+'','+ci+')">&minus;</button><div class="qty-num">'+qty+'</div><button class="qty-btn" onclick="addI(''+item.id+'','+ci+')">+</button></div>';
+                ?'<button class="add-btn" onclick="addI(\''+item.id+'\','+ci+')">+</button>'
+                :'<div class="item-qty"><button class="qty-btn" onclick="remI(\''+item.id+'\','+ci+')">&#8722;</button><div class="qty-num">'+qty+'</div><button class="qty-btn" onclick="addI(\''+item.id+'\','+ci+')">+</button></div>';
             el.innerHTML='<div class="item-info"><h3>'+item.name+'</h3><p>'+item.desc+'</p><span class="item-price">$'+item.price+'</span></div>'+ctrl;
         }
         function addI(id,ci){if(!cart[id])cart[id]={item:gi(id),qty:0};cart[id].qty++;syncUI();renderItem(gi(id),ci!=null?ci:0);}
@@ -172,56 +174,79 @@
             document.getElementById('cart-count').textContent=cnt;
             document.getElementById('c-sub').textContent='$'+sub.toFixed(2);
             document.getElementById('c-total').textContent='$'+tot.toFixed(2);
-            const mn=document.getElementById('min-notice'),cb=document.getElementById('checkout-btn');
+            const mn=document.getElementById('min-notice');
+            const cb=document.getElementById('checkout-btn');
             if(sub>0&&sub<10){mn.classList.add('show');document.getElementById('min-left').textContent=(10-sub).toFixed(2);cb.disabled=true;}
             else{mn.classList.remove('show');cb.disabled=sub===0;}
             const body=document.getElementById('cart-body');
             if(!vals.length){body.innerHTML='<div class="cart-empty"><p>Cart is empty &mdash; add items!</p></div>';return;}
-            body.innerHTML=vals.map(c=>'<div class="c-item"><div><div class="c-item-name">'+c.item.name+'</div><div class="c-item-price">$'+c.item.price+' x '+c.qty+' = $'+(c.item.price*c.qty).toFixed(2)+'</div></div><div class="item-qty"><button class="qty-btn" onclick="remI(''+c.item.id+'')">&minus;</button><div class="qty-num">'+c.qty+'</div><button class="qty-btn" onclick="addI(''+c.item.id+'')">+</button></div></div>').join('');
+            body.innerHTML=vals.map(c=>'<div class="c-item"><div><div class="c-item-name">'+c.item.name+'</div><div class="c-item-price">$'+c.item.price+' x '+c.qty+' = $'+(c.item.price*c.qty).toFixed(2)+'</div></div><div class="item-qty"><button class="qty-btn" onclick="remI(\''+c.item.id+'\')">&minus;</button><div class="qty-num">'+c.qty+'</div><button class="qty-btn" onclick="addI(\''+c.item.id+'\')">+</button></div></div>').join('');
         }
-        function toggleCart(show){document.getElementById('cart-drawer').classList.toggle('open',show);document.getElementById('cart-overlay').style.display=show?'block':'none';document.body.style.overflow=show?'hidden':'';}
+        function toggleCart(show){
+            document.getElementById('cart-drawer').classList.toggle('open',show);
+            document.getElementById('cart-overlay').style.display=show?'block':'none';
+            document.body.style.overflow=show?'hidden':'';
+        }
         function openCheckout(){
             toggleCart(false);
             const vals=Object.values(cart);
-            const sub=vals.reduce((s,c)=>s+(c.item.price*c.qty),0),tot=sub+4;
-            const rows=vals.map(c=>'<div class="sum-row"><span>'+c.item.name+' x'+c.qty+'</span><span>$'+(c.item.price*c.qty).toFixed(2)+'</span></div>').join('')+'<div class="sum-row"><span>Delivery</span><span>$4.00</span></div><div class="sum-row"><span>TOTAL</span><span>$'+tot.toFixed(2)+'</span></div>';
+            const sub=vals.reduce((s,c)=>s+(c.item.price*c.qty),0);
+            const tot=sub+4;
+            const sumRows=vals.map(c=>'<div class="sum-row"><span>'+c.item.name+' x'+c.qty+'</span><span>$'+(c.item.price*c.qty).toFixed(2)+'</span></div>').join('')+'<div class="sum-row"><span>Delivery</span><span>$4.00</span></div><div class="sum-row"><span>TOTAL</span><span>$'+tot.toFixed(2)+'</span></div>';
             window.payMethod='';
             document.getElementById('modal-overlay').classList.add('open');
             document.body.style.overflow='hidden';
             document.getElementById('modal').innerHTML=
                 '<h2>Checkout</h2>'+
-                '<label class="form-label">Full Name</label><input class="form-input" id="cn" placeholder="Your name"/>'+
-                '<label class="form-label">Phone Number</label><input class="form-input" id="cp2" type="tel" placeholder="(555) 000-0000"/>'+
-                '<label class="form-label">Delivery Address</label><input class="form-input" id="ca" placeholder="Street address, Greensboro NC"/>'+
-                '<label class="form-label">Special Instructions</label><textarea class="form-input" id="cx" placeholder="Gate code, leave at door, etc."></textarea>'+
-                '<div class="order-summary">'+rows+'</div>'+
+                '<label class="form-label">Full Name</label><input class="form-input" id="c-name" placeholder="Your name"/>'+
+                '<label class="form-label">Phone Number</label><input class="form-input" id="c-phone" type="tel" placeholder="(555) 000-0000"/>'+
+                '<label class="form-label">Delivery Address</label><input class="form-input" id="c-addr" placeholder="Street address, Greensboro NC"/>'+
+                '<label class="form-label">Special Instructions</label><textarea class="form-input" id="c-notes" placeholder="Gate code, leave at door, etc."></textarea>'+
+                '<div class="order-summary">'+sumRows+'</div>'+
                 '<label class="form-label">Payment Method</label>'+
                 '<div class="pay-methods">'+
-                '<button class="pay-method-btn" onclick="selPay(this,'Venmo')">Venmo</button>'+
-                '<button class="pay-method-btn" onclick="selPay(this,'Cash App')">Cash App</button>'+
-                '<button class="pay-method-btn" onclick="selPay(this,'Zelle')">Zelle</button>'+
-                '<button class="pay-method-btn" onclick="selPay(this,'Cash')">Cash</button>'+
-                '<button class="pay-method-btn" onclick="selPay(this,'PayPal')">PayPal</button>'+
+                '<button class="pay-method-btn" onclick="selPay(this,\'Venmo\')">Venmo</button>'+
+                '<button class="pay-method-btn" onclick="selPay(this,\'Cash App\')">Cash App</button>'+
+                '<button class="pay-method-btn" onclick="selPay(this,\'Zelle\')">Zelle</button>'+
+                '<button class="pay-method-btn" onclick="selPay(this,\'Cash\')">Cash</button>'+
+                '<button class="pay-method-btn" onclick="selPay(this,\'PayPal\')">PayPal</button>'+
                 '</div>'+
-                '<button class="pay-btn" id="pb" onclick="submitOrder()" disabled>SELECT PAYMENT METHOD</button>'+
+                '<button class="pay-btn" id="place-btn" onclick="submitOrder()" disabled>SELECT PAYMENT METHOD</button>'+
                 '<span class="back-link" onclick="closeModal()">Back to cart</span>';
         }
-        function selPay(btn,m){window.payMethod=m;document.querySelectorAll('.pay-method-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const pb=document.getElementById('pb');pb.disabled=false;pb.textContent='PLACE ORDER — '+m;}
+        function selPay(btn,method){
+            window.payMethod=method;
+            document.querySelectorAll('.pay-method-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            const pb=document.getElementById('place-btn');
+            pb.disabled=false;
+            pb.textContent='PLACE ORDER \u2014 '+method;
+        }
         function submitOrder(){
-            const name=document.getElementById('cn').value.trim();
-            const phone=document.getElementById('cp2').value.trim();
-            const addr=document.getElementById('ca').value.trim();
-            const notes=document.getElementById('cx').value.trim();
+            const name=document.getElementById('c-name').value.trim();
+            const phone=document.getElementById('c-phone').value.trim();
+            const addr=document.getElementById('c-addr').value.trim();
+            const notes=document.getElementById('c-notes').value.trim();
             if(!name||!phone||!addr)return alert('Please fill in name, phone, and address.');
             if(!window.payMethod)return alert('Please select a payment method.');
             const vals=Object.values(cart);
-            const sub=vals.reduce((s,c)=>s+(c.item.price*c.qty),0),tot=sub+4;
+            const sub=vals.reduce((s,c)=>s+(c.item.price*c.qty),0);
+            const tot=sub+4;
             const items=vals.map(c=>c.item.name+' x'+c.qty+' $'+(c.item.price*c.qty).toFixed(2)).join(', ');
             fetch(EP,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({date:new Date().toLocaleString(),name,phone,address:addr,items,notes,total:'$'+tot.toFixed(2),method:window.payMethod+' at delivery'})}).catch(()=>{});
-            document.getElementById('modal').innerHTML='<div style="text-align:center;padding:16px 0"><div style="font-size:64px;margin-bottom:16px">&#128293;</div><h2>Order Placed!</h2><p style="margin:12px 0 8px;color:var(--muted)">Thanks <strong>'+name+'</strong>!</p><p style="color:var(--muted);font-size:14px;margin-bottom:16px">We will confirm within 15 minutes at <strong>'+phone+'</strong>.</p><p style="background:#fef3c7;border-radius:8px;padding:12px;font-size:13px;margin-bottom:20px">Pay <strong>$'+tot.toFixed(2)+'</strong> via <strong>'+window.payMethod+'</strong> at delivery.</p><button class="pay-btn" onclick="document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';cart={};syncUI();">DONE</button></div>';
+            document.getElementById('modal').innerHTML=
+                '<div style="text-align:center;padding:16px 0">'+
+                '<div style="font-size:64px;margin-bottom:16px">&#128293;</div>'+
+                '<h2>Order Placed!</h2>'+
+                '<p style="margin:12px 0 8px;color:var(--muted)">Thanks <strong>'+name+'</strong>!</p>'+
+                '<p style="color:var(--muted);font-size:14px;margin-bottom:16px">We will confirm within 15 minutes at <strong>'+phone+'</strong>.</p>'+
+                '<p style="background:#fef3c7;border-radius:8px;padding:12px;font-size:13px;margin-bottom:20px">Pay <strong>$'+tot.toFixed(2)+'</strong> via <strong>'+window.payMethod+'</strong> at delivery.</p>'+
+                '<button class="pay-btn" onclick="document.getElementById(\'modal-overlay\').classList.remove(\'open\');document.body.style.overflow=\'\';cart={};syncUI();">DONE</button>'+
+                '</div>';
         }
         function closeModal(){document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';toggleCart(true);}
-        buildMenu();syncUI();
+        buildMenu();
+        syncUI();
     </script>
 </body>
 </html>
