@@ -1,47 +1,22 @@
-const https = require('https');
-
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
-
+  const headers = { 'Access-Control-Allow-Origin': '*' };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: 'Method Not Allowed' };
   try {
     const data = JSON.parse(event.body);
-
-    // Send to Google Apps Script (server-to-server, no CORS)
-    const payload = JSON.stringify(data);
-    const url = new URL(process.env.APPS_SCRIPT_URL);
-
-    await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: url.hostname,
-        path: url.pathname + url.search,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(payload)
-        },
-        followAllRedirects: true
-      }, (res) => {
-        let body = '';
-        res.on('data', chunk => body += chunk);
-        res.on('end', () => resolve(body));
-      });
-      req.on('error', reject);
-      req.write(payload);
-      req.end();
+    const url = process.env.APPS_SCRIPT_URL;
+    console.log('Sending to Apps Script:', url);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      redirect: 'follow'
     });
-
-    return {
-      statusCode: 200,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: 'OK'
-    };
+    const text = await response.text();
+    console.log('Response:', response.status, text);
+    return { statusCode: 200, headers, body: 'OK' };
   } catch (err) {
-    return {
-      statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: 'Error: ' + err.message
-    };
+    console.error('Function error:', err.message);
+    return { statusCode: 500, headers, body: 'Error: ' + err.message };
   }
 };
