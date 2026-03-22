@@ -127,7 +127,7 @@
     </div>
     <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal"></div></div>
     <script>
-        const EP = 'https://script.google.com/macros/s/AKfycby7DXpm6M2L1QNQ8LeA8uIzG9vvJBtQh5ZzsRkPEGUcWPrqOqBLWuXZVlC95ZIhUzN22A/exec';
+        const EP = 'https://script.google.com/macros/s/AKfycbzBAanaRbBsXeXmpvE8frgjzcvQrOTGSvigqmrDvTjmbiWcIgxZR_I7YjCy1aH1tfsz/exec';
         let cart = {};
         const MENU = [
             {cat:'Smoked Specialties',items:[{id:'so',name:'Smoked Oxtails',desc:'Slow smoked, fall-off-the-bone tender',price:18},{id:'sw',name:'Smoked Wings',desc:'Whole jumbo wings, smoked and seasoned',price:12},{id:'sb',name:'Smoked Burger',desc:'Smoked patty, lettuce, tomato, onion',price:10},{id:'sh',name:'Smoked Hot Dog',desc:'All-beef dog on a toasted bun',price:5}]},
@@ -233,7 +233,7 @@
             const sub=vals.reduce((s,c)=>s+(c.item.price*c.qty),0);
             const tot=sub+4;
             const items=vals.map(c=>c.item.name+' x'+c.qty+' $'+(c.item.price*c.qty).toFixed(2)).join(', ');
-            fetch(EP,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({date:new Date().toLocaleString(),name,phone,address:addr,items,notes,total:'$'+tot.toFixed(2),method:window.payMethod+' at delivery'})}).catch(()=>{});
+            fetch(EP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:new Date().toLocaleString(),name,phone,address:addr,items,notes,total:'$'+tot.toFixed(2),method:window.payMethod+' at delivery'})}).catch(()=>{});
             document.getElementById('modal').innerHTML=
                 '<div style="text-align:center;padding:16px 0">'+
                 '<div style="font-size:64px;margin-bottom:16px">&#128293;</div>'+
